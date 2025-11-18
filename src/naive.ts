@@ -1,9 +1,8 @@
 import { AutocompleteData, NS } from "@ns";
 
 /**
- * @param {AutocompleteData} data - context about the game, useful when autocompleting
- * @param {string[]} args - current arguments, not including "run script.js"
- * @returns {string[]} - the array of possible autocomplete options
+ * @param data - context about the game, useful when autocompleting
+ * @returns the array of possible autocomplete options
  */
 export function autocomplete(data: AutocompleteData) {
   return [...data.servers];
