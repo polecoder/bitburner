@@ -1,6 +1,9 @@
 import { NS } from "@ns";
 
 export const HACKING_SCRIPT = "naive.js";
+export const HACK_SCRIPT = "hack.js";
+export const GROW_SCRIPT = "grow.js";
+export const WEAKEN_SCRIPT = "weaken.js";
 
 /**
  * Devuelve el número de hilos máximos con el que se puede ejecutar el script `script` en el servidor `hostname`.
@@ -84,4 +87,39 @@ export function hack(ns: NS, hostname: string, target: string): void {
 
   // si tengo acceso root, y threads mayores que cero, puedo ejecutar el script
   ns.exec(HACKING_SCRIPT, hostname, threads, target);
+}
+
+/**
+ * Prepara el servidor `target` desde el servidor `hostname` para el hackeo. Es decir debilitar la seguridad hasta su valor mínimo y aumentar el dinero disponible hasta su valor máximo.
+ * Si no se tiene acceso root o no hay RAM suficiente, se devuelve un mensaje de ERROR con print.
+ *
+ * @param ns
+ * @param hostname
+ * @param target
+ * @returns Promise<void>
+ */
+export async function prep(
+  ns: NS,
+  hostname: string,
+  target: string
+): Promise<void> {
+  if (!ns.hasRootAccess(hostname))
+    return ns.print(
+      `ERROR: No se tiene acceso root para el servidor ${hostname}.`
+    );
+
+  // separo en dos la RAM para hacer weaken y grow
+  let threads = getScriptThreads(ns, WEAKEN_SCRIPT, hostname);
+  threads = Math.floor(threads / 2);
+
+  while (
+    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target) ||
+    ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)
+  ) {
+    const weakenTime = ns.getWeakenTime(target);
+
+    ns.exec(WEAKEN_SCRIPT, hostname, threads, target);
+    ns.exec(GROW_SCRIPT, hostname, threads, target);
+    await ns.sleep(weakenTime);
+  }
 }
