@@ -1,9 +1,10 @@
 import { NS } from "@ns";
+import { HGWResult } from "/global";
 
 export const HACKING_SCRIPT = "naive.js";
-export const HACK_SCRIPT = "hack.js";
-export const GROW_SCRIPT = "grow.js";
-export const WEAKEN_SCRIPT = "weaken.js";
+export const HACK_SCRIPT = "hack/hack.js";
+export const GROW_SCRIPT = "hack/grow.js";
+export const WEAKEN_SCRIPT = "hack/weaken.js";
 
 /**
  * Devuelve el número de hilos máximos con el que se puede ejecutar el script `script` en el servidor `hostname`.
@@ -103,23 +104,127 @@ export async function prep(
   hostname: string,
   target: string
 ): Promise<void> {
+  ns.print(`INFO: Preparando el servidor ${target} desde ${hostname}.`);
+  // chequeo de acceso root
   if (!ns.hasRootAccess(hostname))
     return ns.print(
       `ERROR: No se tiene acceso root para el servidor ${hostname}.`
     );
 
   // separo en dos la RAM para hacer weaken y grow
-  let threads = getScriptThreads(ns, WEAKEN_SCRIPT, hostname);
-  threads = Math.floor(threads / 2);
+  const threads = getScriptThreads(ns, WEAKEN_SCRIPT, hostname);
+  if (threads <= 0)
+    return ns.print(
+      `ERROR: No hay RAM disponible para el hackeo en ${hostname}.`
+    );
 
+  // tiempos
+  const weakenTime = ns.getWeakenTime(target);
+  const growTime = ns.getGrowTime(target);
+
+  // primer weaken hasta la seguridad mínima
   while (
-    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target) ||
-    ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)
+    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target)
   ) {
-    const weakenTime = ns.getWeakenTime(target);
-
-    ns.exec(WEAKEN_SCRIPT, hostname, threads, target);
-    ns.exec(GROW_SCRIPT, hostname, threads, target);
+    ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
     await ns.sleep(weakenTime);
+    ns.print(`INFO: Primer weaken completado en ${target}.`);
   }
+
+  // grow hasta el dinero máximo
+  while (ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)) {
+    ns.exec(GROW_SCRIPT, hostname, threads, target, 0);
+    await ns.sleep(growTime);
+    ns.print(`INFO: Grow completado en ${target}.`);
+  }
+
+  // segundo weaken hasta la seguridad mínima
+  while (
+    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target)
+  ) {
+    ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
+    await ns.sleep(weakenTime);
+    ns.print(`INFO: Segundo weaken completado en ${target}.`);
+  }
+}
+
+/**
+ * Obtiene los datos necesarios para realizar una operación coordinada de hackeo, crecimiento y debilitamiento (hgw) en el servidor `target`, robando un porcentaje `percentageToSteal` del dinero máximo del servidor.
+ *
+ * @param ns
+ * @param target el servidor objetivo de la operación
+ * @param percentageToSteal porcentaje del dinero máximo del servidor a robar en la operación (valor entre 0 y 1)
+ * @returns `HGWResult` con los datos necesarios para ejecutar el batch hgw
+ */
+export function calculateHgwResult(
+  ns: NS,
+  target: string,
+  percentageToSteal: number
+): HGWResult {
+  ns.print(
+    `INFO: Obteniendo la información de hgw para ${target} para robar el ${
+      percentageToSteal * 100
+    }% de su dinero máximo.`
+  );
+
+  // variables de tiempo
+  const hackTime = ns.getHackTime(target);
+  const growTime = ns.getGrowTime(target);
+  const weakenTime = ns.getWeakenTime(target);
+
+  // dinero
+  const maxMoney = ns.getServerMaxMoney(target);
+  const moneyToSteal = maxMoney * percentageToSteal;
+  const server = ns.getServer(target);
+
+  // preparo el servidor para los cálculos
+  server.moneyAvailable = maxMoney;
+  server.hackDifficulty = server.minDifficulty;
+
+  // hack threads
+  const percentagePerThread = ns.formulas.hacking.hackPercent(
+    server,
+    ns.getPlayer()
+  );
+  const hackThreads = Math.ceil(percentageToSteal / percentagePerThread);
+  if (!isFinite(hackThreads) || hackThreads <= 0) {
+    ns.print(`ERROR: Los threads para el hackeo en ${target} no son válidos.`);
+    return { possible: false, data: null };
+  }
+
+  // grow threads
+  server.moneyAvailable = maxMoney - moneyToSteal;
+  const growThreads = ns.formulas.hacking.growThreads(
+    server,
+    ns.getPlayer(),
+    maxMoney
+  );
+
+  // weaken threads
+  const hackSecurityIncrease = ns.hackAnalyzeSecurity(hackThreads);
+  const growSecurityIncrease = ns.growthAnalyzeSecurity(growThreads);
+  const totalSecurityIncrease = hackSecurityIncrease + growSecurityIncrease;
+  const weakenSecurityDecrease = ns.weakenAnalyze(1);
+  const weakenThreads = Math.ceil(
+    totalSecurityIncrease / weakenSecurityDecrease
+  );
+
+  // chequeo que el servidor tenga RAM suficiente para ejecutar el batch
+  const ramNeeded =
+    ns.getScriptRam(WEAKEN_SCRIPT, "home") * weakenThreads +
+    ns.getScriptRam(GROW_SCRIPT, "home") * growThreads +
+    ns.getScriptRam(HACK_SCRIPT, "home") * hackThreads;
+
+  // retorno el resultado
+  const data = {
+    hackThreads,
+    growThreads,
+    weakenThreads,
+    hackTime,
+    growTime,
+    weakenTime,
+    ramNeeded,
+  };
+  ns.print(`INFO: Datos de HGW para ${target}: ${JSON.stringify(data)}.`);
+  return { possible: true, data };
 }

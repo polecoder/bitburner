@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 
 /**
- * Ejecuta el `ns.weaken` continuo sobre un objetivo después de un retraso opcional.
+ * Ejecuta el `ns.weaken` sobre un objetivo después de un retraso opcional.
  *
  * @param ns
  */
@@ -13,8 +13,5 @@ export async function main(ns: NS): Promise<void> {
     await ns.sleep(delay);
   }
 
-  /* eslint-disable no-constant-condition */
-  while (true) {
-    await ns.weaken(target);
-  }
+  await ns.weaken(target);
 }

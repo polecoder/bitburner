@@ -1,4 +1,5 @@
 import { NS } from "@ns";
+import { ServerValue } from "/global";
 
 /**
  * Devuelve un valor numérico que representa el valor de un servidor para ser hackeado.
@@ -13,9 +14,9 @@ export function getServerValue(ns: NS, server: string): number {
   const maxMoney = ns.getServerMaxMoney(server);
   const minSecurity = ns.getServerMinSecurityLevel(server);
   const weakenTime = ns.getWeakenTime(server);
-  const hackingLevel = Math.floor(ns.getServerRequiredHackingLevel(server) / 2);
+  const hackingLevel = ns.getServerRequiredHackingLevel(server);
 
-  const canHack = ns.getHackingLevel() >= hackingLevel;
+  const canHack = ns.getHackingLevel() >= hackingLevel * 2;
   if (!canHack) return 0;
 
   return (maxMoney * minSecurity) / weakenTime;
@@ -51,21 +52,29 @@ export function getWorldServers(ns: NS): string[] {
 }
 
 /**
- * Devuelve un mapa con todos los servidores del mundo y su valor asociado.
+ * Devuelve un mapa con todos los servidores del mundo y su valor asociado. Antes de devolverlo, ordena los servidores por valor descendente y elimina los que tienen valor 0.
  * Imprime un mensaje de INFO con tprint indicando los servidores y su valor.
+ * Implementa un recorrido en profundidad (DFS) para descubrir todos los servidores conectados.
  *
  * @param ns
  * @returns un mapa con los servidores y su valor
  */
-export function getWorldServersWithValue(ns: NS): Map<string, number> {
+export function getWorldServersWithValue(ns: NS): ServerValue[] {
   const servers = getWorldServers(ns);
 
-  const result = new Map<string, number>();
+  let result = new Array<ServerValue>();
   for (const server of servers) {
     const value = getServerValue(ns, server);
-    result.set(server, value);
-    ns.tprint(`INFO: {${server}: ${value}}`);
+    result.push({ hostname: server, value: value });
   }
 
+  // filtro y ordeno el resultado
+  result = result.filter((s) => s.value > 0);
+  result = result.sort((a, b) => a.value - b.value);
+
+  // imprimo después del filtrado
+  for (const server of result) {
+    ns.tprint(`INFO: {${server.hostname}: ${server.value}}`);
+  }
   return result;
 }
