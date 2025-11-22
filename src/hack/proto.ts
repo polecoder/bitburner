@@ -19,9 +19,13 @@ export function autocomplete(data: AutocompleteData) {
   return [...data.servers];
 }
 
+/**
+ * Script principal que lanza de forma continua batches HGW contra un objetivo desde los servidores comprados con suficiente RAM libre.
+ *
+ * @param ns
+ */
 export async function main(ns: NS): Promise<void> {
   shush(ns);
-  ns.ui.openTail();
 
   // target
   const target = ns.args[0] as string;
@@ -38,18 +42,18 @@ export async function main(ns: NS): Promise<void> {
     }
   }
 
+  // datos necesarios para el batch hgw
+  const percentageToSteal = 0.5;
+  const hgwResult = calculateHgwResult(ns, target, percentageToSteal);
+  if (!hgwResult.possible || hgwResult.data === null) {
+    return ns.print(
+      `ERROR: No es posible ejecutar el batch hgw contra ${target}. Alguno de los valores calculados no es válido.`
+    );
+  }
+  const hgwData = hgwResult.data;
+
   // veo que servidores tienen suficiente RAM libre para hackear a target
   for (const pserv of purchasedServers) {
-    const percentageToSteal = 0.5;
-    const hgwResult = calculateHgwResult(ns, target, percentageToSteal);
-    if (!hgwResult.possible || hgwResult.data === null) {
-      ns.print(
-        `ERROR: No es posible ejecutar el batch hgw contra ${target} desde ${pserv}. Alguno de los valores calculados no es válido.`
-      );
-      continue;
-    }
-    const hgwData = hgwResult.data;
-
     const maxRam = ns.getServerMaxRam(pserv);
     const usedRam = ns.getServerUsedRam(pserv);
     const freeRam = maxRam - usedRam;
@@ -57,7 +61,6 @@ export async function main(ns: NS): Promise<void> {
     if (freeRam >= hgwData.ramNeeded) {
       nuke(ns, target);
       await launchHgw(ns, pserv, target, hgwData);
-
       break; // paso al siguiente target
     }
   }

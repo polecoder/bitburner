@@ -37,6 +37,9 @@ export function getWorldServers(ns: NS): string[] {
 
   while (servers.length > 0) {
     const current = servers.pop() as string;
+    // salteamos servidores comprados
+    if (current.startsWith("pserv-")) continue;
+
     if (!visited.has(current)) {
       visited.add(current);
 

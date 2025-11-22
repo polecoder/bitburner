@@ -128,15 +128,15 @@ export async function prep(
   ) {
     ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
     await ns.sleep(weakenTime);
-    ns.print(`INFO: Primer weaken completado en ${target}.`);
   }
+  ns.print(`INFO: Primer weaken completado en ${target}.`);
 
   // grow hasta el dinero máximo
   while (ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)) {
     ns.exec(GROW_SCRIPT, hostname, threads, target, 0);
     await ns.sleep(growTime);
-    ns.print(`INFO: Grow completado en ${target}.`);
   }
+  ns.print(`INFO: Grow completado en ${target}.`);
 
   // segundo weaken hasta la seguridad mínima
   while (
@@ -144,8 +144,8 @@ export async function prep(
   ) {
     ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
     await ns.sleep(weakenTime);
-    ns.print(`INFO: Segundo weaken completado en ${target}.`);
   }
+  ns.print(`INFO: Segundo weaken completado en ${target}.`);
 }
 
 /**
@@ -161,12 +161,6 @@ export function calculateHgwResult(
   target: string,
   percentageToSteal: number
 ): HGWResult {
-  ns.print(
-    `INFO: Obteniendo la información de hgw para ${target} para robar el ${
-      percentageToSteal * 100
-    }% de su dinero máximo.`
-  );
-
   // variables de tiempo
   const hackTime = ns.getHackTime(target);
   const growTime = ns.getGrowTime(target);
@@ -225,6 +219,6 @@ export function calculateHgwResult(
     weakenTime,
     ramNeeded,
   };
-  ns.print(`INFO: Datos de HGW para ${target}: ${JSON.stringify(data)}.`);
+  ns.print(`DATA: Datos de HGW para ${target}: ${JSON.stringify(data)}.`);
   return { possible: true, data };
 }
