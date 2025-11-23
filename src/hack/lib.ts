@@ -94,6 +94,8 @@ export function hack(ns: NS, hostname: string, target: string): void {
  * Prepara el servidor `target` desde el servidor `hostname` para el hackeo. Es decir debilitar la seguridad hasta su valor mínimo y aumentar el dinero disponible hasta su valor máximo.
  * Si no se tiene acceso root o no hay RAM suficiente, se devuelve un mensaje de ERROR con print.
  *
+ * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js (que no hace prep) en su lugar.
+ *
  * @param ns
  * @param hostname
  * @param target
@@ -150,6 +152,8 @@ export async function prep(
 
 /**
  * Obtiene los datos necesarios para realizar una operación coordinada de hackeo, crecimiento y debilitamiento (hgw) en el servidor `target`, robando un porcentaje `percentageToSteal` del dinero máximo del servidor.
+ *
+ * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
  *
  * @param ns
  * @param target el servidor objetivo de la operación

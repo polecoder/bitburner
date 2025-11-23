@@ -22,6 +22,8 @@ export function autocomplete(data: AutocompleteData) {
 /**
  * Script principal que lanza de forma continua batches HGW contra un objetivo desde los servidores comprados con suficiente RAM libre.
  *
+ * @deprecated este script no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
+ *
  * @param ns
  */
 export async function main(ns: NS): Promise<void> {
@@ -70,6 +72,8 @@ export async function main(ns: NS): Promise<void> {
  * PRE-CONDICIÓN: el servidor `hostname` tiene acceso root y suficiente RAM para ejecutar todo el batch.
  * Realiza una operación coordinada de hackeo, crecimiento y debilitamiento en el servidor `target` desde el servidor `hostname`.
  * A pesar de la pre-condición, si no se tiene acceso root o no hay RAM suficiente, se devuelve un mensaje de ERROR con print y se interrumpe la ejecución.
+ *
+ * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
  *
  * @param ns
  * @param hostname el servidor desde el cual se ejecutan los scripts
@@ -122,6 +126,8 @@ async function hgw(
 
 /**
  * Ejecuta de forma continua el batch HGW contra un objetivo desde un servidor específico.
+ *
+ * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
  *
  * @param ns
  * @param hostname el servidor desde el cual se ejecutan los scripts

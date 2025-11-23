@@ -8,6 +8,8 @@ const HGW_SCRIPT = "/hack/proto.js";
 /**
  * Lanza batches hgw desde los servidores comprados contra los objetivos más valiosos del mundo.
  *
+ * @deprecated este script no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
+ *
  * @param ns
  * @returns
  */
