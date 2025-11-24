@@ -25,4 +25,14 @@ export async function main(ns: NS): Promise<void> {
 
     ns.exec(SHARE_SCRIPT, server, threads);
   }
+
+  // correr share en home también
+  const threads = getScriptThreads(ns, SHARE_SCRIPT, "home");
+  if (threads <= 0) {
+    ns.print(
+      `WARN: No hay RAM suficiente en home para correr ${SHARE_SCRIPT}.`
+    );
+  }
+
+  ns.exec(SHARE_SCRIPT, "home", threads);
 }
