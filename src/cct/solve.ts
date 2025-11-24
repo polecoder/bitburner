@@ -1,6 +1,10 @@
 import { NS } from "@ns";
 import { findContracts } from "./lib";
-import { largestPrimeFactor, subarrayWithMaximumSum } from "./problems";
+import {
+  largestPrimeFactor,
+  subarrayWithMaximumSum,
+  totalWaysToSum,
+} from "./problems";
 
 export async function main(ns: NS): Promise<void> {
   const serversWithContracts = findContracts(ns);
@@ -12,6 +16,8 @@ export async function main(ns: NS): Promise<void> {
       ns.tprint(
         `    - Tipo: ${ns.codingcontract.getContractType(contract, server)}`
       );
+      // intentar resolver el contrato si es de los tipos conocidos
+      solve(ns, contract, server);
     }
   }
 
@@ -28,23 +34,44 @@ export async function main(ns: NS): Promise<void> {
   // }
 
   // resolver los contratos de home
-  const homeContracts = serversWithContracts.get("home") as string[];
+  const server = "home";
+  const homeContracts = serversWithContracts.get(server) as string[];
   for (const contract of homeContracts) {
-    const type = ns.codingcontract.getContractType(contract, "home");
-    const data = ns.codingcontract.getData(contract, "home");
+    solve(ns, contract, server);
+  }
+}
 
-    if (type === "Find Largest Prime Factor") {
-      const result = largestPrimeFactor(data as number);
-      const attempt = ns.codingcontract.attempt(result, contract, "home");
-      ns.tprint(
-        `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
-      );
-    } else if (type === "Subarray with Maximum Sum") {
-      const result = subarrayWithMaximumSum(data as number[]);
-      const attempt = ns.codingcontract.attempt(result, contract, "home");
-      ns.tprint(
-        `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
-      );
-    }
+/**
+ * Intenta resolver el contrato de tipo `contract` en el servidor `server`.
+ * Devuelve un mensaje en la terminal indicando si se ha resuelto con éxito o no.
+ *
+ * @param ns
+ * @param contract
+ * @param server
+ */
+function solve(ns: NS, contract: string, server: string): void {
+  // obtener información del contrato
+  const type = ns.codingcontract.getContractType(contract, server);
+  const data = ns.codingcontract.getData(contract, server);
+
+  // filtrar por tipo de contrato y resolver
+  if (type === "Find Largest Prime Factor") {
+    const result = largestPrimeFactor(data as number);
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
+  } else if (type === "Subarray with Maximum Sum") {
+    const result = subarrayWithMaximumSum(data as number[]);
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
+  } else if (type === "Total Ways to Sum") {
+    const result = totalWaysToSum(data as number);
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
   }
 }
