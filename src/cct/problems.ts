@@ -55,6 +55,8 @@ export function totalWaysToSum(number: number): number {
    *
    * @param number el número del que se quieren contar las formas de sumar
    * @param maxAddend el máximo sumando permitido en la suma
+   * @param memo un mapa para almacenar resultados intermedios y evitar cálculos repetidos
+   * @returns el número de formas de sumar `number` usando sumandos hasta `maxAddend`
    */
   function countWays(
     number: number,
@@ -67,7 +69,6 @@ export function totalWaysToSum(number: number): number {
     const key = `${number},${maxAddend}`;
     if (memo.has(key)) return memo.get(key) as number;
 
-    //
     const result =
       countWays(number, maxAddend - 1, memo) +
       countWays(number - maxAddend, maxAddend, memo);
@@ -76,6 +77,51 @@ export function totalWaysToSum(number: number): number {
     return result;
   }
 
-  // Usamos n-1 como máximo para excluir automáticamente "n solo"
+  // usamos n-1 como máximo para excluir automáticamente "n solo"
   return countWays(number, number - 1);
+}
+
+/**
+ * Calcula el número total de formas en que un número dado puede ser expresado como la suma de números enteros positivos tomados de un conjunto especificado por el parámetro `data`.
+ *
+ * @param number el número del cual se quieren contar las formas de ser sumado
+ * @param data el conjunto de números enteros positivos que se pueden usar como sumandos
+ * @returns
+ */
+export function totalWaysToSumII(number: number, data: number[]): number {
+  /**
+   * Cuenta las formas de sumar `number` usando sumandos del array `numberPool`.
+   * Guarda los resultados intermedios en un mapa `memo` para evitar cálculos repetidos (programación dinámica con memoización).
+   * Función auxiliar recursiva.
+   *
+   * @param number el número del que se quieren contar las formas de sumar
+   * @param numberPool el conjunto de sumandos permitidos en la suma
+   * @param memo un mapa para almacenar resultados intermedios y evitar cálculos repetidos
+   * @returns
+   */
+  function countWays(
+    number: number,
+    numberPool: number[],
+    memo: Map<string, number> = new Map<string, number>()
+  ): number {
+    if (number === 0) return 1; // una forma de sumar 0: no usar sumandos
+    if (number < 0 || numberPool.length === 0) return 0; // no hay formas de sumar un número negativo o si no hay sumandos disponibles
+
+    // nos fijamos si ya tenemos el resultado en el memo
+    const key = `${number}-${numberPool.join(",")}`;
+    if (memo.has(key)) return memo.get(key) as number;
+
+    // obtengo el resultado, sumando las formas de contar usando el primer número del pool y sin usarlo
+    const result =
+      countWays(number, numberPool.slice(1), memo) +
+      countWays(number - numberPool[0], numberPool, memo);
+
+    memo.set(key, result);
+    return result;
+  }
+
+  // ordenamos el array de mayor a menor
+  data = data.sort((a, b) => b - a);
+
+  return countWays(number, data);
 }
