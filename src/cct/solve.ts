@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { findContracts } from "./lib";
 import {
+  arrayJumpingGame,
   largestPrimeFactor,
   spiralizeMatrix,
   subarrayWithMaximumSum,
@@ -83,6 +84,18 @@ function solve(ns: NS, contract: string, server: string): void {
     );
   } else if (type === "Spiralize Matrix") {
     const result = spiralizeMatrix(data as number[][]);
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
+  } else if (type === "Array Jumping Game") {
+    const result = arrayJumpingGame(data as number[]) !== 0 ? 1 : 0; // el contrato espera 1 si es posible llegar al final, 0 si no
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
+  } else if (type === "Array Jumping Game II") {
+    const result = arrayJumpingGame(data as number[]);
     const attempt = ns.codingcontract.attempt(result, contract, server);
     ns.tprint(
       `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`

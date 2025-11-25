@@ -173,3 +173,36 @@ export function spiralizeMatrix(matrix: number[][]): number[] {
 
   return result;
 }
+
+/**
+ * Dado un array de números enteros donde cada elemento representa el máximo salto que se puede dar desde esa posición, calcula el número mínimo de saltos necesarios para llegar al final del array.
+ *
+ * @param data el array de números enteros que representan los máximos saltos desde cada posición
+ * @returns el número mínimo de saltos necesarios para llegar al final del array, o 0 si no es posible llegar al final
+ */
+export function arrayJumpingGame(data: number[]): number {
+  if (data.length <= 1) return 0;
+
+  let jumps = 0;
+  let currentEnd = 0; // hasta dónde puedo llegar con los saltos actuales
+  let farthest = 0; // lo más lejos que puedo llegar explorando
+
+  for (let i = 0; i < data.length - 1; i++) {
+    // actualizo lo más lejos que puedo llegar desde la posición i
+    farthest = Math.max(farthest, i + data[i]);
+
+    // si llegué al final del rango actual, debo hacer otro salto
+    if (i === currentEnd) {
+      jumps++;
+      currentEnd = farthest;
+
+      // si después de saltar sigo sin poder avanzar, es imposible
+      if (currentEnd <= i) return 0;
+    }
+
+    // si ya puedo llegar al final, termino
+    if (currentEnd >= data.length - 1) break;
+  }
+
+  return currentEnd >= data.length - 1 ? jumps : 0;
+}
