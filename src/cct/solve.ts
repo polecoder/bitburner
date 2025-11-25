@@ -2,6 +2,7 @@ import { NS } from "@ns";
 import { findContracts } from "./lib";
 import {
   largestPrimeFactor,
+  spiralizeMatrix,
   subarrayWithMaximumSum,
   totalWaysToSum,
   totalWaysToSumII,
@@ -76,6 +77,12 @@ function solve(ns: NS, contract: string, server: string): void {
     );
   } else if (type === "Total Ways to Sum II") {
     const result = totalWaysToSumII(data[0] as number, data[1] as number[]);
+    const attempt = ns.codingcontract.attempt(result, contract, server);
+    ns.tprint(
+      `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`
+    );
+  } else if (type === "Spiralize Matrix") {
+    const result = spiralizeMatrix(data as number[][]);
     const attempt = ns.codingcontract.attempt(result, contract, server);
     ns.tprint(
       `INFO: Contrato ${contract} resuelto: ${attempt ? "Éxito" : "Fracaso"}`

@@ -125,3 +125,51 @@ export function totalWaysToSumII(number: number, data: number[]): number {
 
   return countWays(number, data);
 }
+
+/**
+ * Recorre una matriz en espiral y devuelve un array con los elementos en el orden recorrido.
+ *
+ * @param matrix la matriz a recorrer en espiral
+ * @returns un array con los elementos de la matriz en el orden recorrido en espiral
+ */
+export function spiralizeMatrix(matrix: number[][]): number[] {
+  const result: number[] = [];
+  const totalCells = matrix.length * matrix[0].length;
+
+  const rowLength = matrix[0].length;
+  const columnLength = matrix.length;
+
+  let top = 0;
+  let bottom = columnLength - 1;
+  let left = 0;
+  let right = rowLength - 1;
+
+  while (result.length < totalCells) {
+    // recorrer fila superior
+    for (let col = left; col <= right; col++) {
+      if (result.length >= totalCells) break; // salgo si ya llené el array resultado
+      result.push(matrix[top][col]);
+    }
+    // recorrer columna derecha
+    for (let row = top + 1; row <= bottom; row++) {
+      if (result.length >= totalCells) break; // salgo si ya llené el array resultado
+      result.push(matrix[row][right]);
+    }
+    // recorrer fila inferior
+    for (let col = right - 1; col >= left; col--) {
+      if (result.length >= totalCells) break; // salgo si ya llené el array resultado
+      result.push(matrix[bottom][col]);
+    }
+    // recorrer columna izquierda
+    for (let row = bottom - 1; row > top; row--) {
+      if (result.length >= totalCells) break; // salgo si ya llené el array resultado
+      result.push(matrix[row][left]);
+    }
+    top++;
+    bottom--;
+    left++;
+    right--;
+  }
+
+  return result;
+}
