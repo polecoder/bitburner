@@ -94,8 +94,6 @@ export function hack(ns: NS, hostname: string, target: string): void {
  * Prepara el servidor `target` desde el servidor `hostname` para el hackeo. Es decir debilitar la seguridad hasta su valor mínimo y aumentar el dinero disponible hasta su valor máximo.
  * Si no se tiene acceso root o no hay RAM suficiente, se devuelve un mensaje de ERROR con print.
  *
- * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js (que no hace prep) en su lugar.
- *
  * @param ns
  * @param hostname
  * @param target
@@ -114,46 +112,31 @@ export async function prep(
     );
 
   // separo en dos la RAM para hacer weaken y grow
-  const threads = getScriptThreads(ns, WEAKEN_SCRIPT, hostname);
+  let threads = getScriptThreads(ns, WEAKEN_SCRIPT, hostname);
+  threads = Math.floor(threads / 3);
   if (threads <= 0)
     return ns.print(
       `ERROR: No hay RAM disponible para el hackeo en ${hostname}.`
     );
 
-  // tiempos
+  // tiempo de weaken
   const weakenTime = ns.getWeakenTime(target);
-  const growTime = ns.getGrowTime(target);
 
-  // primer weaken hasta la seguridad mínima
+  // mientras el servidor no esté preparado, lo preparo
   while (
-    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target)
+    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target) ||
+    ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)
   ) {
-    ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
+    ns.exec(WEAKEN_SCRIPT, hostname, threads, target);
+    ns.exec(GROW_SCRIPT, hostname, threads, target);
     await ns.sleep(weakenTime);
   }
-  ns.print(`INFO: Primer weaken completado en ${target}.`);
 
-  // grow hasta el dinero máximo
-  while (ns.getServerMoneyAvailable(target) < ns.getServerMaxMoney(target)) {
-    ns.exec(GROW_SCRIPT, hostname, threads, target, 0);
-    await ns.sleep(growTime);
-  }
-  ns.print(`INFO: Grow completado en ${target}.`);
-
-  // segundo weaken hasta la seguridad mínima
-  while (
-    ns.getServerSecurityLevel(target) > ns.getServerMinSecurityLevel(target)
-  ) {
-    ns.exec(WEAKEN_SCRIPT, hostname, threads, target, 0);
-    await ns.sleep(weakenTime);
-  }
-  ns.print(`INFO: Segundo weaken completado en ${target}.`);
+  ns.print(`INFO: Servidor ${target} preparado.`);
 }
 
 /**
  * Obtiene los datos necesarios para realizar una operación coordinada de hackeo, crecimiento y debilitamiento (hgw) en el servidor `target`, robando un porcentaje `percentageToSteal` del dinero máximo del servidor.
- *
- * @deprecated esta función no está funcionando correctamente todavía. Usar /pserv/simple.js en su lugar.
  *
  * @param ns
  * @param target el servidor objetivo de la operación
